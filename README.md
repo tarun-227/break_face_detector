@@ -225,13 +225,6 @@ python3 predict.py [path] [options]
 - Tested on 3× NVIDIA RTX A4000 (16GB each)
 - ~30–60 min per fragment on a single GPU depending on point count
 
----
-
-## References
-
-- [PointNet++: Deep Hierarchical Feature Learning on Point Sets in a Metric Space](https://arxiv.org/abs/1706.05350) — Qi et al., NeurIPS 2017
-- [Open3D](http://www.open3d.org/) — point cloud processing library
-- [Healing Stones — ML4Sci GSoC 2025](https://ml4sci.org/) — University of Alabama
 
 ---
 
