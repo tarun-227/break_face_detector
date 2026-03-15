@@ -225,6 +225,46 @@ python3 predict.py [path] [options]
 - Tested on 3× NVIDIA RTX A4000 (16GB each)
 - ~30–60 min per fragment on a single GPU depending on point count
 
+---
+
+## Current Limitations & Future Work
+
+### Training Data
+The current model is trained on only **3 annotated fragments** (frag1, frag2, frag11). This is the primary limitation — with more annotated fragments the model will generalize significantly better. Annotating additional fragments in Blender (painting break surfaces green) and rerunning `train.py` is all that is needed. No code changes required.
+
+Expected improvement trajectory:
+
+| Fragments in Training | Expected Generalization |
+|---|---|
+| 3 (current) | Good on similar geometry, some gaps on flat interior break regions |
+| 6–8 | Strong generalization across most fragment types |
+| 11+ (full dataset) | Near-complete generalization |
+
+### Known Issues
+- **Flat interior break surfaces** — the center of a large flat break surface looks locally identical to a flat original surface. The model correctly detects edges but may miss the interior. The iterative fill post-processing partially compensates for this.
+- **Prediction speed** — each fragment takes 30–60 min on a single GPU because patches are built point-by-point using KDTree lookups on CPU. This is a pure engineering bottleneck, not a model limitation.
+
+### Planned Improvements
+
+**Short term**
+- Annotate and train on remaining fragments — biggest single improvement with no architectural changes needed
+- Batch KDTree lookups to speed up prediction by 10–50x
+- Threshold tuning per fragment based on validation set
+
+**Model architecture**
+- PointNet++ with feature propagation layers (segmentation head) instead of classification head — would allow the model to directly output per-point labels without the patch-extraction step, massively speeding up inference
+- Add curvature and roughness as explicit input features alongside XYZ + normals — these are strong geometric signals for break surfaces
+- Attention mechanisms in the Set Abstraction layers to better weight informative neighbours
+
+**Post-processing**
+- Morphological closing on the predicted break region to fill interior holes more aggressively
+- Graph-based smoothing — enforce spatial coherence via a CRF or graph cut on the probability map
+- Learned post-processing — train a small GNN to refine raw predictions using spatial context
+
+**Pipeline extensions (beyond break detection)**
+- Feature descriptor extraction on detected break surfaces for fragment matching
+- Pairwise fragment similarity scoring to predict which fragments share a break
+- ICP-based alignment of matched break surfaces accounting for surface erosion and gaps
 
 ---
 
